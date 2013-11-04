@@ -3,6 +3,24 @@ require 'spec_helper'
 describe "UserPages" do
 	subject { page }
 
+	describe 'profile page' do
+		let(:user) { FactoryGirl.create :user }
+		let!(:m1) { FactoryGirl.create :micropost, user: user, content: 'foo' }
+		let!(:m2) { FactoryGirl.create :micropost, user: user, content: 'bar' }
+
+		before { visit user_path(user) }
+
+		it { should have_content user.name }
+		it { should have_title user.name }
+
+		describe 'microposts'	do
+			it { should have_content m1.content }
+			it { should have_content m2.content }
+			it { should have_content user.microposts.count }
+		end # end microposts
+	end # end profile page
+	  
+	
 	describe 'index' do
 		let(:user) { FactoryGirl.create(:user) }
 		before(:each) do
@@ -107,7 +125,7 @@ describe "UserPages" do
 			it "should not create a user" do
 				expect { click_button submit }.not_to change(User, :count)
 			end
-		end
+		end # with invalid information
 
 		describe "with valid information" do
 			before do
@@ -128,25 +146,22 @@ describe "UserPages" do
 				it { should have_link('Sign Out') }
 				it { should have_title(user.name) }
 				it { should have_selector('div.alert.alert-success', text: 'Welcome') }
-			#end
 
 				describe "followed by signout" do
 					before { click_link "Sign Out" }
 				
 					it { should have_link "Sign In" }
-				end
-
-			end
-
-		end
-	end
+				end # followed by signout
+			end # after saving the user
+		end # with valid information
+	end # signup
 
 	describe "sign up page" do
 		before { visit signup_path }
 
 		it { should have_content 'Sign Up' }
 		it { should have_title(full_title 'Sign Up') }
-	end
+	end # signup page
 
 	describe "profile page" do
 		let(:user) { FactoryGirl.create(:user) }
@@ -154,5 +169,5 @@ describe "UserPages" do
 
 		it { should have_content(user.name) }
 		it { should have_title(user.name) }
-	end
+	end # profile page
 end
