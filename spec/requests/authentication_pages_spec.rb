@@ -5,6 +5,7 @@ describe "AuthenticationPages" do
 	subject { page }
 
 	describe 'authorization' do
+		
 		describe 'as non-admin user' do
 			let(:user) { FactoryGirl.create(:user) }
 			let(:non_admin) { FactoryGirl.create(:user) }
@@ -14,9 +15,8 @@ describe "AuthenticationPages" do
 			describe 'submitting a DELETE request to the Users#destroy action' do
 				before { delete user_path(user) }
 				specify { expect(response).to redirect_to root_url }
-			end
+			end # submitting a delete request to users#destroy action
 		end # as non admin user
-
 
 		describe 'as wrong user' do
 			let(:user) { FactoryGirl.create(:user) }
@@ -29,18 +29,30 @@ describe "AuthenticationPages" do
 
 				specify { expect(response.body).not_to match(full_title('Edit User')) }
 				specify { expect(response).to redirect_to(root_url) }
-			end
+			end # submitting a get request to the users#edit action
 		
 			describe 'submitting a PATCH request to the Users#update action' do
 				before { patch user_path(wrong_user) }
 				
 				specify { expect(response).to redirect_to(root_url) }
-			end
-		end
+			end # submitting a patch request to the users#update action
+		end # as wrong user
 		
 		describe 'for non-signed-in users' do
 			let(:user) { FactoryGirl.create(:user) }
 			
+			describe 'in the microposts controller' do
+				describe 'submitting to the create action' do
+					before { post microposts_path }	
+					specify { expect(response).to redirect_to signin_path }
+				end # submitting to create action
+
+				describe 'submitting to the destroy action' do
+					before { delete micropost_path(FactoryGirl.create(:micropost)) }
+					specify { expect(response).to redirect_to(signin_path) }
+				end # submitting to destory action
+			end # in the microposts controller
+		
 			describe 'when attempting to visit a protected page' do
 				before do
 					visit edit_user_path(user)
@@ -80,7 +92,6 @@ describe "AuthenticationPages" do
 		end # for non-signed-in users
 	end # authentication
 
-
 	describe "signin page" do
 		before { visit signin_path }
 
@@ -99,7 +110,7 @@ describe "AuthenticationPages" do
 				it { should_not have_selector('div.alert.alert-error') }
 			end
 
-		end
+		end # with invalid input
 
 		describe "with valid information" do
 			let(:user) { FactoryGirl.create(:user) }
@@ -116,8 +127,8 @@ describe "AuthenticationPages" do
 			it { should have_link('Settings', href: edit_user_path(user)) }
 			it { should have_link('Users', href: users_path) }
 			it { should_not have_link('Sign In', href: signin_path) }
-		end
+		end # with valid information
 
-	end 
+	end # with valid input
 
-end
+end # authenticaion pages

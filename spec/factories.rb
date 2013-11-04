@@ -8,6 +8,10 @@ FactoryGirl.define do
 		factory :admin do
 			admin true
 		end
+	end # end user
 
-	end
+	factory :micropost do
+		content 'Temp content.'
+		user
+	end # end micropost
 end

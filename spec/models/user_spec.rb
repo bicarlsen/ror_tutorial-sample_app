@@ -13,15 +13,51 @@ describe User do
 	it { should respond_to(:password_confirmation) }
 	it { should respond_to(:authenticate) }
 	it { should respond_to(:admin) }
-	
+	it { should respond_to :microposts }
 	it { should be_valid }
 	it { should_not be_admin }
+
+	describe 'micropost associations' do
+		before { @user.save }
+		
+		let!(:old_micropost) do
+			FactoryGirl.create(:micropost, user: @user, created_at: 1.day.ago)
+		end
+
+		let!(:new_micropost) do
+			FactoryGirl.create(:micropost, user: @user, created_at: 1.hour.ago)
+		end
+
+		it 'should have the right microposts in the right order' do
+			expect(@user.microposts.to_a).to eq [new_micropost, old_micropost]
+		end
+
+		it 'should destroy associated microposts' do
+			microposts = @user.microposts.to_a
+			@user.destroy
+
+			microposts.each do |mp|
+				expect(Micropost.where(id: mp.id)).to be_empty
+			end
+		end # end should destroy associated microposts
+
+		describe 'status' do
+			let(:unfollowed_post) do
+				FactoryGirl.create :micropost, user: FactoryGirl.create(:user)
+			end
+
+			its(:feed) { should include(new_micropost) }
+			its(:feed) { should include(old_micropost) }
+			its(:feed) { should_not include (unfollowed_post) }
+		end # status
+	end # micropost associations
+
 
 	describe 'with admin attribute set to "true"' do 
 		before do
 			@user.save!
 			@user.toggle!(:admin)
-		end
+		end 
 
 		it { should be_admin }
 	end # with admin attributes set to true
@@ -44,22 +80,22 @@ describe User do
 			
 			it { should_not eq user_for_invalid_password }
 			specify { expect(user_for_invalid_password).to be_false }
-		end
-	end
+		end # with invalid password
+	end # return value of authenticate method
 
 	describe "with a password that's too short" do
 		before { @user.password = @user.password_confirmation = 'a' *5 }
 		it { should be_invalid }
-	end
+	end # with a password that is too short
 
 	describe "when password is not present" do
 		before do
 			@user = User.new(name: "Example User", email: "user@example.com",
 				password: "", password_confirmation: "")
-		end
+		end 
 
 		it { should_not be_valid }
-	end
+	end # when password is not present
 
 	describe "when password and confirmation do not match" do
 		before { @user.password_confirmation = "mismatch" }
@@ -113,9 +149,6 @@ describe User do
 	end
 
 end
-
-
-
 
 
 
